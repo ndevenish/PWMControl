@@ -1,0 +1,36 @@
+metric=true
+metricoutput=true
+#dpi=2000
+
+back=Adv_PWM-B.Cu.gbr
+outline=Adv_PWM-Edge.Cuts.gbr
+drill=Adv_PWM.drl
+
+# Cutting parameters
+zsafe=5
+zwork=-0.05
+mill-feed=300
+mill-speed=10000
+offset=0.2
+zchange=30
+
+# Drilling
+zdrill=-1.7
+drill-feed=1000
+drill-speed=10000
+#drill-front=true
+onedrill=true
+
+# Outline cutting
+cutter-diameter=2.0
+zcut=-1.7
+cut-feed=400
+cut-infeed=10
+cut-speed=10000
+bridges=1.0
+zbridges=-0.050
+bridgesnum=4
+
+# Compatibility
+nog64=true
+nog81=true
