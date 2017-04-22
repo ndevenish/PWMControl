@@ -205,7 +205,7 @@ U 1 1 58E253DF
 P 6100 4450
 F 0 "R3" V 6180 4450 50  0000 C CNN
 F 1 "330R" V 6100 4450 50  0000 C CNN
-F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P7.62mm_Horizontal" V 6030 4450 50  0001 C CNN
+F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal" V 6030 4450 50  0001 C CNN
 F 3 "" H 6100 4450 50  0000 C CNN
 	1    6100 4450
 	0    -1   -1   0   
@@ -232,7 +232,7 @@ F 3 "" H 6650 4450 50  0000 L CNN
 	1    6650 4550
 	1    0    0    -1  
 $EndComp
-Text Label 4800 2800 0    60   ~ 0
+Text Label 4800 2600 0    60   ~ 0
 PWM
 Text Label 4800 2700 0    60   ~ 0
 IN
@@ -244,7 +244,7 @@ Text Label 4900 3000 0    60   ~ 0
 A
 Text Label 4900 3100 0    60   ~ 0
 B
-Text Label 4900 2600 0    60   ~ 0
+Text Label 4800 2800 0    60   ~ 0
 SW
 Text Label 5850 4200 0    60   ~ 0
 PWM
@@ -272,7 +272,7 @@ Wire Wire Line
 Wire Wire Line
 	6950 4550 7550 4550
 Wire Wire Line
-	5000 2600 4900 2600
+	4800 2600 5000 2600
 Wire Wire Line
 	3850 2600 3750 2600
 Wire Wire Line
