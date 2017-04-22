@@ -242,9 +242,9 @@ Text Label 4050 2950 0    60   ~ 0
 B
 Text Label 4900 3000 0    60   ~ 0
 A
-Text Label 4900 3100 0    60   ~ 0
-B
 Text Label 4800 2800 0    60   ~ 0
+B
+Text Label 4900 3100 0    60   ~ 0
 SW
 Text Label 5850 4200 0    60   ~ 0
 PWM
@@ -295,7 +295,7 @@ Wire Wire Line
 	4050 2950 4050 3200
 Wire Wire Line
 	4250 3800 4250 4200
-Text Label 4250 4200 0    60   ~ 0
+Text Label 4600 4500 0    60   ~ 0
 SW
 $Comp
 L VCC #PWR09
@@ -360,4 +360,39 @@ Wire Wire Line
 	7600 4850 7550 4850
 Wire Wire Line
 	7550 4850 7550 4550
+$Comp
+L R R5
+U 1 1 58FB4D6E
+P 4250 4350
+F 0 "R5" V 4150 4350 50  0000 C CNN
+F 1 "33k" V 4250 4350 50  0000 C CNN
+F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal" V 4180 4350 50  0001 C CNN
+F 3 "" H 4250 4350 50  0000 C CNN
+	1    4250 4350
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	4250 4500 4600 4500
+$Comp
+L R R6
+U 1 1 58FB4E92
+P 4250 4650
+F 0 "R6" V 4150 4650 50  0000 C CNN
+F 1 "22k" V 4250 4650 50  0000 C CNN
+F 2 "Resistors_THT:R_Axial_DIN0204_L3.6mm_D1.6mm_P5.08mm_Horizontal" V 4180 4650 50  0001 C CNN
+F 3 "" H 4250 4650 50  0000 C CNN
+	1    4250 4650
+	1    0    0    -1  
+$EndComp
+$Comp
+L +5V #PWR011
+U 1 1 58FB4F31
+P 4250 4800
+F 0 "#PWR011" H 4250 4650 50  0001 C CNN
+F 1 "+5V" H 4250 4940 50  0000 C CNN
+F 2 "" H 4250 4800 50  0000 C CNN
+F 3 "" H 4250 4800 50  0000 C CNN
+	1    4250 4800
+	-1   0    0    1   
+$EndComp
 $EndSCHEMATC
