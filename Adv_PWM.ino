@@ -18,6 +18,16 @@ void setup() {
   pinMode(PIN_ROT_B, INPUT_PULLUP);
 }
 
+void input_rising() {
+  attachInterrupt(0, falling, FALLING);
+  prev_time = micros();
+}
+ 
+void falling() {
+  attachInterrupt(0, rising, RISING);
+  pwm_value = micros()-prev_time;
+  Serial.println(pwm_value);
+}
 void loop() {
   // put your main code here, to run repeatedly:
 

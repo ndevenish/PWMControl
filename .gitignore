@@ -1,2 +1,10 @@
 *.kicad_pcb-bak
+*.o
+gerber/*.png
+gerber/*.ngc
+gerber/*.svg
+gerber/*.gbr
+gerber/*.drl
 
+*.bak
+*-cache.lib
