@@ -8,3 +8,5 @@ gerber/*.drl
 
 *.bak
 *-cache.lib
+src/Debug
+src/Release
