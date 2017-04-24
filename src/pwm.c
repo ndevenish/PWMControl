@@ -7,16 +7,11 @@
 #include <avr/interrupt.h>
 #include <util/delay.h>                // for _delay_ms()
 //#include <math.h>
+#include <stdint.h>
 
-// Pin assignments
-#define PIN_PWM_OUT PB0
-#define PIN_PWM_IN  PB1
-#define PIN_ROT_B   PB2
-#define PIN_LED     PB3
-#define PIN_ROT_A   PB4
+#include "pwm.h"
+//#include <math.h>
 
-#define PIN_ROT_SW  PB5
-#define ADC_SW      ADC0
 
 
 // Check that the PORTB/DDRB/PINB constants are all identical
@@ -88,60 +83,31 @@ void adc_setup(void)
   // Read time approx. 50 uS
 }
 
+
 // Read the duty cycle of a PWM signal
 uint8_t read_duty_cycle()
 {
-  // Lowest frequency = 488Hz >> 476Hz (round 2.1 ms)
-  // At 500Hz, max period is 2.1ms/(1/9.6MHZ) == 20160
-  // This corresponds to the longest we would have to wait for a change
-  const uint16_t max_period_cycles = 20160;
-  const uint16_t  max_loops = max_period_cycles / 12;
-  uint16_t counter = max_loops;
-  // Count the width in terms of number of loops
-  uint16_t firstWidth = 0;
-  uint16_t fullWidth = 0;
-
-
   // Switch to 8MHZ to capture small steps
   cli();
   set_cpu_clock_fast();
 
-  const uint8_t startState = (PINB & (1 << PIN_PWM_IN));
+  uint32_t result = read_cycle_ASM();
   
-  // Wait for the first change
-  while ((PINB & (1 << PIN_PWM_IN)) == startState)
-    if (--counter == 0)
-      // If this loop failed, then zero or full duty cycle
-      return startState == 0 ? 0 : 255;
-
-  // Time while waiting for the second change
-  while ((PINB & (1 << PIN_PWM_IN)) != startState)
-    if (++firstWidth == max_loops)
-      // This loop failed, must have moved to this state on this edge
-      return startState == 0 ? 255 : 0;
-
-  // Now back in original state, time this
-  fullWidth = firstWidth;
-  while ((PINB & (1 << PIN_PWM_IN)) == startState)
-    if (++fullWidth == max_loops)
-      // This loop failed. Must have just moved to this state!
-      return startState == 0 ? 0 : 255;
-
   // Have all the information we need now.
   // Switch back to 1.2MHZ
   set_cpu_clock_slow();
   sei();
 
+  uint16_t fullWidth = result & 0xFFFF;
+  uint16_t firstWidth = (result >> 16) & 0xFFFF;
+
   // The shortest possible pulse to observe
-  uint16_t one256 = fullWidth / 256;
+  uint16_t one256 = (fullWidth + 255) / 256;
   // Divide the first length by this (rounded)
   uint8_t dutyCycle = (firstWidth + one256 - 1) / one256;
+  
   // Now invert if we started with a high signal
-  if (startState == 0) {
-    return dutyCycle;
-  } else {
-    return 255-dutyCycle;
-  }
+  return dutyCycle;
 }
 
 /// ADC-read the reset pin to check if we have the button pressed.
