@@ -1,7 +1,7 @@
 (export (version D)
   (design
     (source C:/Users/misno/Dropbox/KiCad/Adv_PWM/Adv_PWM.sch)
-    (date "22/04/2017 14:15:37")
+    (date "24/04/2017 11:14:45")
     (tool "Eeschema 4.0.5")
     (sheet (number 1) (name /) (tstamps /)
       (title_block
@@ -59,7 +59,7 @@
       (tstamp 58E253DF))
     (comp (ref C1)
       (value 4.7u)
-      (footprint Capacitors_THT:CP_Radial_D5.0mm_P2.50mm)
+      (footprint Capacitors_THT:CP_Radial_D4.0mm_P2.00mm)
       (libsource (lib device) (part CP))
       (sheetpath (names /) (tstamps /))
       (tstamp 58E25B1D))
@@ -192,10 +192,10 @@
   (libraries
     (library (logical device)
       (uri "C:\\Program Files\\KiCad\\share\\kicad\\library\\device.lib"))
-    (library (logical opto)
-      (uri "C:\\Program Files\\KiCad\\share\\kicad\\library\\opto.lib"))
     (library (logical atmel)
       (uri "C:\\Program Files\\KiCad\\share\\kicad\\library\\atmel.lib"))
+    (library (logical opto)
+      (uri "C:\\Program Files\\KiCad\\share\\kicad\\library\\opto.lib"))
     (library (logical conn)
       (uri "C:\\Program Files\\KiCad\\share\\kicad\\library\\conn.lib")))
   (nets
