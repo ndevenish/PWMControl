@@ -72,6 +72,8 @@ uint8_t read_duty_cycle()
 {
   // Switch to 8MHZ to capture small steps
   cli();
+  // Set the timer prescaler to /8 to keep any same PWM
+  TCCR0B = (TCCR0B & (1<< WGM02)) | (1<<CS01);
   clock_prescale_set(clock_div_1);
 
   uint32_t result = read_cycle_ASM();
@@ -79,6 +81,9 @@ uint8_t read_duty_cycle()
   // Have all the information we need now.
   // Switch back to 1.2MHZ
   clock_prescale_set(clock_div_8);
+  // Switch the timer prescaler back to /1
+  TCCR0B = (TCCR0B & (1<< WGM02)) | (1<<CS00);
+
   sei();
 
   uint32_t fullWidth = (result & 0xFFFF);
@@ -130,7 +135,7 @@ int main(void)
   read_reset_pin();
 
   while(1) {
-   res = read_duty_cycle();
+   volatile uint8_t res = read_duty_cycle();
    _delay_ms(5);
   }
 }
