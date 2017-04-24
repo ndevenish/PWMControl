@@ -83,8 +83,9 @@ read_cycle_ASM:
 		cpc r25,r31	 ;  D.1676, D.1676
 		breq .L4	 ; Loop until the pin has changed state
 
-		ldi r18,0	 ;  firstWidth	 ;  4	*movhi/2	[length = 2]
-		ldi r19,0	 ;  firstWidth
+		ldi r18,0	 ;  firstWidth
+		ldi r19,0	 ;  
+
 		rjmp .L6	 ; 	 ;  219	jump	[length = 1]
 .L7:
 //**       // If this loop failed, then zero or full duty cycle
@@ -113,7 +114,8 @@ read_cycle_ASM:
 		brne .L7	 ; ,	 ;  62	branch	[length = 1]
 
 
-		movw r22,r18	 ;  firstWidth, firstWidth	 ;  5	*movhi/1	[length = 1]
+		movw r22,r18	 ; Copy firstWidth[r18:19] to fullWidth[r22:23] to continue counting
+
 		rjmp .L9	 ; 	 ;  222	jump	[length = 1]
 .L10:
 //**       // This loop failed, must have moved to this state on this edge
@@ -129,6 +131,8 @@ read_cycle_ASM:
 		cpi r22,lo8(cycle_length)	 ;  firstWidth,	 ;  68	*cmphi/7	[length = 3]
 		ldi r17,hi8(cycle_length)	 ; ,
 		cpc r23,r17	 ;  firstWidth,
+//**       // This loop failed. Must have just moved to this state!
+//**       return startState == 0 ? 0 : 255; 
 		breq .L18	 ; ,	 ;  69	branch	[length = 1]
 .L9:
 //**     if (++fullWidth == max_loops)
@@ -139,13 +143,22 @@ read_cycle_ASM:
 		cp r20,r30	 ;  D.1676, D.1676	 ;  85	*cmphi/3	[length = 2]
 		cpc r21,r31	 ;  D.1676, D.1676
 		breq .L10	 ; ,	 ;  86	branch	[length = 1]
-//**       // This loop failed. Must have just moved to this state!
-//**       return startState == 0 ? 0 : 255; 
-//** 
-//**   if (startState == 1)
+
+
+// Success return logic
+
+//**   if (startState)
+    tst r26
+    breq .LM9 ; Skip this next block if startState == 0
+              ; We only want to invert the results if we started with logic high
 //**     firstWidth = fullWidth - firstWidth;
-//**   return (((uint32_t)firstWidth) << 16) | ((uint32_t)fullWidth);
+    movw r24,r22 ; r24 = fullWidth
+    sub r24, r18 ; fullWidth - firstWidth
+    sbc r25, r19 ;
+    movw r18, r24 ; replace firstWidth with the new value
+
 .LM9:
+//**   return (((uint32_t)firstWidth) << 16) | ((uint32_t)fullWidth);
 		movw r24,r18	 ;  D.1677, firstWidth	 ;  143	*movhi/1	[length = 1]
 		ldi r26,0	 ;  D.1677	 ;  144	*movhi/2	[length = 2]
 		ldi r27,0	 ;  D.1677
@@ -182,7 +195,7 @@ read_cycle_ASM:
     // Return the case when we just have 100% on signal
 		ldi r22,lo8(-1)	 ;  D.1673,	 ;  6	*movsi/5	[length = 4]
 		ldi r23,0	 ;  D.1673
-		ldi r24,0	 ;  D.1673
+		ldi r24,lo8(-1)	 ;  D.1673
 		ldi r25,0	 ;  D.1673
 /* epilogue start */
 .LM13:
@@ -196,9 +209,9 @@ read_cycle_ASM:
 		breq .L13	 ; ,	 ;  48	branch	[length = 1]
 .L12:
     /// Return the case when we have 100% off signal
-		ldi r22,0	 ;  D.1673	 ;  10	*movsi/2	[length = 3]
+		ldi r22,lo8(-1)	 ;  D.1673	 ;  10	*movsi/2	[length = 3]
 		ldi r23,0	 ;  D.1673
-		movw r24,r22	 ;  D.1673
+		ldi r24,0	 ;  D.1673
 /* epilogue start */
 .LM15:
 		pop r17	 ; 	 ;  211	popqi	[length = 1]
