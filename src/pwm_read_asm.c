@@ -13,7 +13,7 @@ uint32_t read_cycle_ASM()
   // At 476Hz, max clock period is 2.1ms/(1/9.6MHZ) == 20160
   // This corresponds to the longest we would have to wait for a change
   const uint16_t max_period_cycles = 20160;
-  const uint16_t  max_loops = max_period_cycles / 12;
+  const uint16_t  max_loops = max_period_cycles / 13;
   // Restricts the initial waiting period
   uint16_t counter = max_loops;
   // Count the width in terms of number of loops

@@ -1,16 +1,20 @@
-
-#include <avr/io.h>
-
+	.file	"pwm_read_asm.c"
 __SP_L__ = 0x3d
 __SREG__ = 0x3f
 __tmp_reg__ = 0
 __zero_reg__ = 1
+
 
 	.text
 .Ltext0:
 .global	read_cycle_ASM
 
 read_cycle_ASM:
+//** // This file is not built but is used to generate duty_cycle.S via 
+//** //    avr-gcc -gstabs -Wa,-ahlmsd=output.lst -dp -fverbose-asm -O2 -mmcu=attiny13 -c pwm_read_asm.c
+//** 
+//** //#error "This file should not be compiled directly unless generating assembly (remove this line)"
+//** 
 //** #include <avr/io.h>
 //** #include "pwm.h"
 //** 
@@ -29,7 +33,7 @@ read_cycle_ASM:
 //**   // At 476Hz, max clock period is 2.1ms/(1/9.6MHZ) == 20160
 //**   // This corresponds to the longest we would have to wait for a change
 //**   const uint16_t max_period_cycles = 20160;
-//**   const uint16_t  max_loops = max_period_cycles / 12;
+//**   const uint16_t  max_loops = max_period_cycles / 13;
 //**   // Restricts the initial waiting period
 //**   uint16_t counter = max_loops;
 //**   // Count the width in terms of number of loops
@@ -46,7 +50,7 @@ read_cycle_ASM:
 //**   // Wait for the first change
 //**   while ((PINB & (1 << PIN_PWM_IN)) == startState)
 .LM2:
-		ldi r18,lo8(-112)	 ;  D.1674,	 ;  3	*movhi/5	[length = 2]
+		ldi r18,lo8(14)	 ;  D.1674,	 ;  3	*movhi/5	[length = 2]
 		ldi r19,lo8(6)	 ;  D.1674,
 		rjmp .L2	 ; 	 ;  217	jump	[length = 1]
 .L4:
@@ -74,12 +78,10 @@ read_cycle_ASM:
 //**   // Time while waiting for the second change
 //**   while ((PINB & (1 << PIN_PWM_IN)) != startState)
 //**     if (++firstWidth == max_loops)
-
-// Here to the brne at the end of LM6 is the first measure loop
 .LM5:
 		subi r18,-1	 ;  firstWidth,	 ;  43	addhi3_clobber/2	[length = 2]
 		sbci r19,-1	 ;  firstWidth,
-		cpi r18,-112	 ;  firstWidth,	 ;  44	*cmphi/7	[length = 3]
+		cpi r18,14	 ;  firstWidth,	 ;  44	*cmphi/7	[length = 3]
 		ldi r16,6	 ; ,
 		cpc r19,r16	 ;  firstWidth,
 		breq .L20	 ; ,	 ;  45	branch	[length = 1]
@@ -107,7 +109,7 @@ read_cycle_ASM:
 .LM7:
 		subi r22,-1	 ;  firstWidth,	 ;  67	addhi3_clobber/2	[length = 2]
 		sbci r23,-1	 ;  firstWidth,
-		cpi r22,-112	 ;  firstWidth,	 ;  68	*cmphi/7	[length = 3]
+		cpi r22,14	 ;  firstWidth,	 ;  68	*cmphi/7	[length = 3]
 		ldi r17,6	 ; ,
 		cpc r23,r17	 ;  firstWidth,
 		breq .L18	 ; ,	 ;  69	branch	[length = 1]
