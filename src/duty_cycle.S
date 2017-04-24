@@ -1,17 +1,25 @@
-	.file	"pwm_read_asm.c"
+/**
+This file is originally constructed from pwm_read_asm.c via 
+    avr-gcc -gstabs -Wa,-ahlmsd=output.lst -dp -fverbose-asm -O2 -mmcu=attiny13 -c pwm_read_asm.c
+
+It's done this way to ensure that the loop timings are identical for both measurements. It seems to be
+so with -O2 but other optimizations (like size) seem to cause different behaviors for some reason.
+
+As time goes on and I understand the asm better, GCC template that is not required may be removed.
+**/
+
 __SP_L__ = 0x3d
 __SREG__ = 0x3f
 __tmp_reg__ = 0
 __zero_reg__ = 1
 
+cycle_length = 1550
 
 	.text
 .Ltext0:
 .global	read_cycle_ASM
 
 read_cycle_ASM:
-//** // This file is not built but is used to generate duty_cycle.S via 
-//** //    avr-gcc -gstabs -Wa,-ahlmsd=output.lst -dp -fverbose-asm -O2 -mmcu=attiny13 -c pwm_read_asm.c
 //** 
 //** //#error "This file should not be compiled directly unless generating assembly (remove this line)"
 //** 
@@ -27,7 +35,7 @@ read_cycle_ASM:
 /* prologue: function */
 /* frame size = 0 */
 /* stack size = 2 */
-.L__stack_usage = 2
+//.L__stack_usage = 2
 //** 
 //**   // Lowest frequency = 488Hz >> 476Hz (rounded to 2.1 ms)
 //**   // At 476Hz, max clock period is 2.1ms/(1/9.6MHZ) == 20160
@@ -50,8 +58,8 @@ read_cycle_ASM:
 //**   // Wait for the first change
 //**   while ((PINB & (1 << PIN_PWM_IN)) == startState)
 .LM2:
-		ldi r18,lo8(14)	 ;  D.1674,	 ;  3	*movhi/5	[length = 2]
-		ldi r19,lo8(6)	 ;  D.1674,
+		ldi r18,lo8(cycle_length)	 ;  D.1674,	 ;  3	*movhi/5	[length = 2]
+		ldi r19,hi8(cycle_length)	 ;  D.1674,
 		rjmp .L2	 ; 	 ;  217	jump	[length = 1]
 .L4:
 		subi r18,1	 ;  D.1674,	 ;  21	addhi3_clobber/2	[length = 2]
@@ -74,17 +82,19 @@ read_cycle_ASM:
 .L7:
 //**       // If this loop failed, then zero or full duty cycle
 //**       return startState == 0 ? 0 : 255;
-//** 
-//**   // Time while waiting for the second change
+
+
+// FIRST TIMING LOOP
+
 //**   while ((PINB & (1 << PIN_PWM_IN)) != startState)
 //**     if (++firstWidth == max_loops)
 .LM5:
-		subi r18,-1	 ;  firstWidth,	 ;  43	addhi3_clobber/2	[length = 2]
-		sbci r19,-1	 ;  firstWidth,
-		cpi r18,14	 ;  firstWidth,	 ;  44	*cmphi/7	[length = 3]
-		ldi r16,6	 ; ,
-		cpc r19,r16	 ;  firstWidth,
-		breq .L20	 ; ,	 ;  45	branch	[length = 1]
+		subi r18,-1	 ; Increment firstWidth
+		sbci r19,-1	 ;  
+		cpi r18,lo8(cycle_length)	 ; Compare firstWidth to the loop maximum
+		ldi r16,hi8(cycle_length)	 ; 
+		cpc r19,r16	 			     ; 
+		breq .L20	 ; Stop if we've hit the maximum loop count
 .L6:
 //**     if (++firstWidth == max_loops)
 .LM6:
@@ -109,8 +119,8 @@ read_cycle_ASM:
 .LM7:
 		subi r22,-1	 ;  firstWidth,	 ;  67	addhi3_clobber/2	[length = 2]
 		sbci r23,-1	 ;  firstWidth,
-		cpi r22,14	 ;  firstWidth,	 ;  68	*cmphi/7	[length = 3]
-		ldi r17,6	 ; ,
+		cpi r22,lo8(cycle_length)	 ;  firstWidth,	 ;  68	*cmphi/7	[length = 3]
+		ldi r17,hi8(cycle_length)	 ; ,
 		cpc r23,r17	 ;  firstWidth,
 		breq .L18	 ; ,	 ;  69	branch	[length = 1]
 .L9:
