@@ -18,12 +18,19 @@ __SREG__ = 0x3f
 __tmp_reg__ = 0
 __zero_reg__ = 1
 
+
 // Lowest frequency = 488Hz >> 476Hz (rounded to 2.1 ms)
 // At 476Hz, max clock period is 2.1ms/(1/9.6MHZ) == 20160
 // 		20160 / Loop length (13) ~= 1550
-// This corresponds to the longest iterations to wait for a change.
-// Also, the largest number that will be returned.
+// This corresponds to the highest number of iterations to wait for a change.
+// - Also, the largest number that will be returned.
 cycle_length = 1550
+
+// In ultra-pathological cases, this function could take 4.2ms.
+// It will take 2.1ms for zero or 100% duty cycle
+// Otherwise, it should be at most 1.5*input frequency.
+// Above 1Khz, will start dropping off accuracy as a 1/256 pulse will
+// be <= 2 iterations
 
 .text
 .Ltext0:
