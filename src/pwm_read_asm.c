@@ -41,7 +41,8 @@ uint32_t read_cycle_ASM()
       // This loop failed. Must have just moved to this state!
       return startState == 0 ? 0 : 255; 
 
-  if (startState == 1)
+  // If we started with some state, the results are inverted
+  if (startState)
     firstWidth = fullWidth - firstWidth;
   return (((uint32_t)firstWidth) << 16) | ((uint32_t)fullWidth);
 
