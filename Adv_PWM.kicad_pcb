@@ -764,7 +764,7 @@
   )
   (gr_line (start 142 74.25) (end 173 74.25) (layer Edge.Cuts) (width 0.15))
   (gr_line (start 179.25 103.25) (end 142 103.25) (layer Edge.Cuts) (width 0.15))
-  (gr_text OUT (at 143.016 92.202 270) (layer F.SilkS) (tstamp 58E78F1B)
+  (gr_text SIG (at 143.016 92.202 270) (layer F.SilkS) (tstamp 58E78F1B)
     (effects (font (size 0.8 0.8) (thickness 0.2)))
   )
   (gr_text "+\n" (at 143.016 97.79 270) (layer F.SilkS) (tstamp 58E78EF6)
