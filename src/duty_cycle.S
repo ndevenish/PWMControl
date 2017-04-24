@@ -8,14 +8,24 @@ so with -O2 but other optimizations (like size) seem to cause different behavior
 As time goes on and I understand the asm better, GCC template that is not required may be removed.
 **/
 
+//#define __ASSEMBLER__
+#include <avr/io.h>
+//.include "tn13adef.inc"
+
+
 __SP_L__ = 0x3d
 __SREG__ = 0x3f
 __tmp_reg__ = 0
 __zero_reg__ = 1
 
+// Lowest frequency = 488Hz >> 476Hz (rounded to 2.1 ms)
+// At 476Hz, max clock period is 2.1ms/(1/9.6MHZ) == 20160
+// 		20160 / Loop length (13) ~= 1550
+// This corresponds to the longest iterations to wait for a change.
+// Also, the largest number that will be returned.
 cycle_length = 1550
 
-	.text
+.text
 .Ltext0:
 .global	read_cycle_ASM
 
@@ -35,13 +45,8 @@ read_cycle_ASM:
 /* prologue: function */
 /* frame size = 0 */
 /* stack size = 2 */
-//.L__stack_usage = 2
-//** 
-//**   // Lowest frequency = 488Hz >> 476Hz (rounded to 2.1 ms)
-//**   // At 476Hz, max clock period is 2.1ms/(1/9.6MHZ) == 20160
-//**   // This corresponds to the longest we would have to wait for a change
-//**   const uint16_t max_period_cycles = 20160;
-//**   const uint16_t  max_loops = max_period_cycles / 13;
+.L__stack_usage = 2
+
 //**   // Restricts the initial waiting period
 //**   uint16_t counter = max_loops;
 //**   // Count the width in terms of number of loops
@@ -50,17 +55,18 @@ read_cycle_ASM:
 //** 
 //**   const uint8_t startState = (PINB & (1 << PIN_PWM_IN));
 .LM1:
-		in r26,0x16	 ;  D.1675, MEM[(volatile uint8_t *)54B]	 ;  15	movqi_insn/4	[length = 1]
-		andi r26,lo8(2)	 ;  startState,	 ;  16	andqi3/2	[length = 1]
-		mov r30,r26	 ;  D.1676, startState	 ;  153	movqi_insn/1	[length = 1]
+		in r26,PINB-0x20	 ; Read the port and specific pin
+		andi r26,PINB2	   ; 
+		mov r30,r26	 ; startState - The state of the pin when starting the read
+
 		ldi r31,0	 ;  D.1676	 ;  154	movqi_insn/1	[length = 1]
-//**   
-//**   // Wait for the first change
-//**   while ((PINB & (1 << PIN_PWM_IN)) == startState)
+
+
 .LM2:
-		ldi r18,lo8(cycle_length)	 ;  D.1674,	 ;  3	*movhi/5	[length = 2]
-		ldi r19,hi8(cycle_length)	 ;  D.1674,
-		rjmp .L2	 ; 	 ;  217	jump	[length = 1]
+		ldi r18,lo8(cycle_length)	 ; Load the maximum cycle counter
+		ldi r19,hi8(cycle_length)	 ;
+		rjmp .L2	 ; Jump into the first waiting loop
+
 .L4:
 		subi r18,1	 ;  D.1674,	 ;  21	addhi3_clobber/2	[length = 2]
 		sbc r19,__zero_reg__	 ;  D.1674
@@ -70,12 +76,13 @@ read_cycle_ASM:
 .L2:
 //**     if (--counter == 0)
 .LM4:
-		in r24,0x16	 ;  D.1675, MEM[(volatile uint8_t *)54B]	 ;  33	movqi_insn/4	[length = 1]
-		andi r24,lo8(2)	 ;  D.1675,	 ;  35	andqi3/2	[length = 1]
+		in r24,PINB-0x20	 ; Read the port and extract the PIN
+		andi r24,PINB2	   ; 
 		ldi r25,0	 ;  D.1676	 ;  152	movqi_insn/1	[length = 1]
 		cp r24,r30	 ;  D.1676, D.1676	 ;  37	*cmphi/3	[length = 2]
 		cpc r25,r31	 ;  D.1676, D.1676
-		breq .L4	 ; ,	 ;  38	branch	[length = 1]
+		breq .L4	 ; Loop until the pin has changed state
+
 		ldi r18,0	 ;  firstWidth	 ;  4	*movhi/2	[length = 2]
 		ldi r19,0	 ;  firstWidth
 		rjmp .L6	 ; 	 ;  219	jump	[length = 1]
@@ -98,8 +105,8 @@ read_cycle_ASM:
 .L6:
 //**     if (++firstWidth == max_loops)
 .LM6:
-		in r24,0x16	 ;  D.1675, MEM[(volatile uint8_t *)54B]	 ;  57	movqi_insn/4	[length = 1]
-		andi r24,lo8(2)	 ;  D.1675,	 ;  59	andqi3/2	[length = 1]
+		in r24,PINB-0x20	 ;  D.1675, MEM[(volatile uint8_t *)54B]	 ;  57	movqi_insn/4	[length = 1]
+		andi r24,PINB2	 ;  D.1675,	 ;  59	andqi3/2	[length = 1]
 		ldi r25,0	 ;  D.1676	 ;  150	movqi_insn/1	[length = 1]
 		cp r24,r30	 ;  D.1676, D.1676	 ;  61	*cmphi/3	[length = 2]
 		cpc r25,r31	 ;  D.1676, D.1676
@@ -126,8 +133,8 @@ read_cycle_ASM:
 .L9:
 //**     if (++fullWidth == max_loops)
 .LM8:
-		in r20,0x16	 ;  D.1675, MEM[(volatile uint8_t *)54B]	 ;  81	movqi_insn/4	[length = 1]
-		andi r20,lo8(2)	 ;  D.1675,	 ;  83	andqi3/2	[length = 1]
+		in r20,PINB-0x20	 ;  D.1675, MEM[(volatile uint8_t *)54B]	 ;  81	movqi_insn/4	[length = 1]
+		andi r20,PINB2	 ;  D.1675,	 ;  83	andqi3/2	[length = 1]
 		ldi r21,0	 ;  D.1676	 ;  148	movqi_insn/1	[length = 1]
 		cp r20,r30	 ;  D.1676, D.1676	 ;  85	*cmphi/3	[length = 2]
 		cpc r21,r31	 ;  D.1676, D.1676
