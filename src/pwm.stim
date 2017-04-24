@@ -1,0 +1,8 @@
+// Example stimuli file, feeds any output on PINA back to PINB.
+#10
+$repeat 2000
+	PINB = 2
+	#4800
+	PINB = 0
+	#4800
+$endrep
