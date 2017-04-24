@@ -4,6 +4,7 @@
 
 #include <stdbool.h> 
 #include <avr/io.h>
+#include <avr/power.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>                // for _delay_ms()
 //#include <math.h>
@@ -33,9 +34,10 @@ inline void set_led_off(void)
 /// MUST turns off interrupts
 void set_cpu_clock_fast(void)
 {
+  clock_prescale_set(clock_div_1);
   // Notify that we are about to change the clock
-  CLKPR = (1 << CLKPCE);
-  CLKPR = 0x00;
+  //CLKPR = (1 << CLKPCE);
+  //CLKPR = 0x00;
 }
 
 /// Set the system clock to it's slow setting (1.2MHz)
@@ -43,8 +45,8 @@ void set_cpu_clock_fast(void)
 void set_cpu_clock_slow(void)
 {
   // Notify that we are about to change the clock
-  CLKPR = (1 << CLKPCE);
-  CLKPR |= (1 << CLKPS1) | (1 << CLKPS0);
+  //CLKPR = (1 << CLKPCE);
+  //CLKPR = (1 << CLKPS1) | (1 << CLKPS0);
 }
 
 void setup_pins() {
@@ -89,22 +91,24 @@ uint8_t read_duty_cycle()
 {
   // Switch to 8MHZ to capture small steps
   cli();
-  set_cpu_clock_fast();
+  clock_prescale_set(clock_div_1);
 
   uint32_t result = read_cycle_ASM();
   
   // Have all the information we need now.
   // Switch back to 1.2MHZ
-  set_cpu_clock_slow();
+  clock_prescale_set(clock_div_8);
   sei();
 
-  uint16_t fullWidth = result & 0xFFFF;
-  uint16_t firstWidth = (result >> 16) & 0xFFFF;
+  volatile uint32_t fullWidth = (result & 0xFFFF) * 10000;
+  volatile uint32_t firstWidth = ((result >> 16) & 0xFFFF) * 10000;
 
+  
   // The shortest possible pulse to observe
-  uint16_t one256 = (fullWidth + 255) / 256;
+  volatile uint32_t one256 = (fullWidth + 128) / 256;
+  
   // Divide the first length by this (rounded)
-  uint8_t dutyCycle = (firstWidth + one256 - 1) / one256;
+  volatile uint8_t dutyCycle = (firstWidth + (one256/2)) / one256;
   
   // Now invert if we started with a high signal
   return dutyCycle;
@@ -145,5 +149,9 @@ int main(void)
 
   read_reset_pin();
   uint8_t res = read_duty_cycle();
-  
+
+  while(1) {
+   res = read_duty_cycle();
+   _delay_ms(5);
+  }
 }

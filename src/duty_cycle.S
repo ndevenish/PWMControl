@@ -174,11 +174,12 @@ read_cycle_ASM:
 .L18:
 //** 
 .LM11:
-		tst r26	 ;  startState	 ;  71	*cmpqi/1	[length = 1]
-		breq .L12	 ; ,	 ;  72	branch	[length = 1]
+		tst r26	 ; Check startState
+		breq .L12	 ; If startState was Zero,
 .L13:
 //** 
 .LM12:
+    // Return the case when we just have 100% on signal
 		ldi r22,lo8(-1)	 ;  D.1673,	 ;  6	*movsi/5	[length = 4]
 		ldi r23,0	 ;  D.1673
 		ldi r24,0	 ;  D.1673
@@ -194,6 +195,7 @@ read_cycle_ASM:
 		tst r26	 ;  startState	 ;  47	*cmpqi/1	[length = 1]
 		breq .L13	 ; ,	 ;  48	branch	[length = 1]
 .L12:
+    /// Return the case when we have 100% off signal
 		ldi r22,0	 ;  D.1673	 ;  10	*movsi/2	[length = 3]
 		ldi r23,0	 ;  D.1673
 		movw r24,r22	 ;  D.1673
