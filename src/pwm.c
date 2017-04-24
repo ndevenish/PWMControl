@@ -30,25 +30,6 @@ inline void set_led_off(void)
   PORTB &= ~(1 << PIN_LED);
 }
 
-/// Set the system clock to it's fastest value (9.6MHZ)
-/// MUST turns off interrupts
-void set_cpu_clock_fast(void)
-{
-  clock_prescale_set(clock_div_1);
-  // Notify that we are about to change the clock
-  //CLKPR = (1 << CLKPCE);
-  //CLKPR = 0x00;
-}
-
-/// Set the system clock to it's slow setting (1.2MHz)
-/// Should turn off interrupts
-void set_cpu_clock_slow(void)
-{
-  // Notify that we are about to change the clock
-  //CLKPR = (1 << CLKPCE);
-  //CLKPR = (1 << CLKPS1) | (1 << CLKPS0);
-}
-
 void setup_pins() {
   // Initialize all pins as input
   DDRB  = 0x00;
@@ -100,15 +81,14 @@ uint8_t read_duty_cycle()
   clock_prescale_set(clock_div_8);
   sei();
 
-  volatile uint32_t fullWidth = (result & 0xFFFF) * 10000;
-  volatile uint32_t firstWidth = ((result >> 16) & 0xFFFF) * 10000;
+  uint32_t fullWidth = (result & 0xFFFF);
+  uint32_t firstWidth = ((result >> 16) & 0xFFFF);
 
   
-  // The shortest possible pulse to observe
-  volatile uint32_t one256 = (fullWidth + 127) / 255;
-  
-  // Divide the first length by this (rounded)
-  volatile uint8_t dutyCycle = (firstWidth + (one256/2)) / one256;
+  // Ratio x 10k. Possible optimization by making this some power of two.
+  uint32_t ratio = (firstWidth*10000 + fullWidth/2) / fullWidth;
+  // Calculate the duty cycle by multiplying then dividing this back into range
+  uint8_t dutyCycle = (ratio * 255 + 5000) / 10000;
   
   // Now invert if we started with a high signal
   return dutyCycle;
@@ -148,7 +128,6 @@ int main(void)
   // Read the PWM input pin to determine the current PWM before startup
 
   read_reset_pin();
-  uint8_t res = read_duty_cycle();
 
   while(1) {
    res = read_duty_cycle();
