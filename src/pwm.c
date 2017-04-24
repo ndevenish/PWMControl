@@ -105,7 +105,7 @@ uint8_t read_duty_cycle()
 
   
   // The shortest possible pulse to observe
-  volatile uint32_t one256 = (fullWidth + 128) / 256;
+  volatile uint32_t one256 = (fullWidth + 127) / 255;
   
   // Divide the first length by this (rounded)
   volatile uint8_t dutyCycle = (firstWidth + (one256/2)) / one256;
