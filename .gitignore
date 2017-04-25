@@ -11,3 +11,5 @@ gerber/*.pdf
 *-cache.lib
 src/Debug
 src/Release
+
+.vs
