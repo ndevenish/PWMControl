@@ -180,6 +180,9 @@
     <Compile Include="pwm.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="read_pwm_int0.c">
+      <SubType>compile</SubType>
+    </Compile>
     <None Include="pwm_read_asm.c">
       <SubType>compile</SubType>
     </None>

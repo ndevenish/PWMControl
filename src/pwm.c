@@ -14,7 +14,6 @@
 //#include <math.h>
 
 
-
 // Check that the PORTB/DDRB/PINB constants are all identical
 #if PB0 != DDB0 || PB0 != PINB0
 #error "IO bits mismatch"
@@ -66,7 +65,7 @@ void adc_setup(void)
   // Read time approx. 50 uS
 }
 
-
+#ifndef PWM_INTERRUPT
 // Read the duty cycle of a PWM signal
 uint8_t read_duty_cycle()
 {
@@ -98,6 +97,7 @@ uint8_t read_duty_cycle()
   // Now invert if we started with a high signal
   return dutyCycle;
 }
+#endif
 
 /// ADC-read the reset pin to check if we have the button pressed.
 /// Voltage on pin will drop from 5v to 3v when the button is pressed.
@@ -120,6 +120,34 @@ bool read_reset_pin() {
 
 void set_pwm_output(uint8_t value)
 {
+  // ATTiny13A, p66:
+  //   The extreme values for the OCR0A Register represents special cases when generating a PWM
+  // waveform output in the fast PWM mode. If the OCR0A is set equal to BOTTOM, the output will
+  // be a narrow spike for each MAX+1 timer clock cycle. Setting the OCR0A equal to MAX will result
+  // in a constantly high or low output (depending on the polarity of the output set by the COM0A[1:0]
+  // bits.)
+
+  if (value == 0) {
+    // Inverted mode, OCR0A = MAX - off all the time
+    OCR0A = 0xFF;
+    TCCR0A = (1<<COM0A1) | (1<<COM0A0) | (1<<WGM01) | (1<<WGM00);
+  }
+  // Normal mode otherwise (includes edge case 0xFF)
+  TCCR0A = (1<<COM0A1) | (1<<WGM01) | (1<<WGM00);
+  OCR0A = value;
+}
+
+void pwm_setup(void)
+{
+  // Start with zero duty-cycle
+  set_pwm_output(0);
+
+  // Set timer to CPU /1. This starts it.
+  TCCR0B = (TCCR0B & (1<< WGM02)) | (1<<CS00);
+
+
+  // // Inverting Fast-PWM mode
+  // 
 
 }
 

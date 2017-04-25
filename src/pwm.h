@@ -5,6 +5,7 @@
  *  Author: misno
  */ 
 
+#include <stdint.h>
 
 #ifndef PWM_H_
 #define PWM_H_
@@ -21,6 +22,11 @@
 
 
 uint32_t read_cycle_ASM();
+
+
+// Define this to use interrupt and timer-based PWM measurement
+//#define PWM_INTERRUPT
+
 
 
 
