@@ -5,6 +5,7 @@ gerber/*.ngc
 gerber/*.svg
 gerber/*.gbr
 gerber/*.drl
+gerber/*.pdf
 
 *.bak
 *-cache.lib
